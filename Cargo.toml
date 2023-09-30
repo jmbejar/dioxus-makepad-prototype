@@ -1,0 +1,12 @@
+[package]
+name = "dioxus-makepad"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dioxus = { path = "../dioxus/packages/dioxus", version = "0.4" }
+dioxus-native-core = { git = "https://github.com/DioxusLabs/dioxus/", features = ["dioxus"] }
+dioxus-html = { git = "https://github.com/DioxusLabs/dioxus/" }
+makepad-widgets = { path = "../makepad/widgets", version = "0.6" }
