@@ -1,6 +1,5 @@
 
 use makepad_widgets::*;
-use crate::{rebuild_virtual_dom, virtual_dom_handle_event};
 
 use dioxus::core::{ElementId, Template};
 use dioxus::prelude::TemplateNode;
@@ -95,7 +94,7 @@ impl AppMain for App {
         for button_listeners in self.dioxus_listeners.iter() {
             let button_id = button_listeners.makepad_el;
             if self.ui.button(&[button_id]).clicked(&actions) {
-                virtual_dom_handle_event("click", button_listeners.dioxus_el);
+                crate::virtual_dom::handle_event("click", button_listeners.dioxus_el);
             }
         }
     }
@@ -114,7 +113,7 @@ impl LiveHook for App {
             self.dioxus_templates.clear();
             self.dioxus_listeners.clear();
 
-            let (serialized_templates, serialized_edits) = rebuild_virtual_dom();
+            let (serialized_templates, serialized_edits) = crate::virtual_dom::rebuild();
 
             let templates: Vec<Template> = serde_json::from_str(&serialized_templates).unwrap();
             let mutations: Vec<serde_json::Value> = serde_json::from_str(&serialized_edits).unwrap();
