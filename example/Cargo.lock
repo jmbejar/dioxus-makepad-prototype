@@ -340,6 +340,8 @@ dependencies = [
  "dioxus-html 0.4.2 (git+https://github.com/DioxusLabs/dioxus/)",
  "dioxus-native-core",
  "makepad-widgets",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
