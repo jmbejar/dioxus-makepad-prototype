@@ -15,6 +15,7 @@ fn app(cx: Scope) -> Element {
                 p { "Count: {counter}" }
             }
             button {
+                style: "text-align: center; margin-top: 20px;",
                 onclick: |_| {
                     *counter.make_mut() += 1;
                     println!("hello makepad!");

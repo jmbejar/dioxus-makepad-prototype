@@ -45,8 +45,12 @@ live_design! {
             }
         }
 
-        button_template: <Button> {
-            width: Fit,
+        button_template: <View> {
+            width: Fill,
+            height: Fit,
+            button = <Button> {
+                width: Fit,
+            }
         }
     }
 }
@@ -105,7 +109,7 @@ impl AppMain for App {
         let mut was_event_handled = false;
         for button_listeners in self.dioxus_listeners.iter() {
             let button_id = button_listeners.makepad_el;
-            if self.ui.button(&[button_id]).clicked(&actions) {
+            if self.ui.view(&[button_id]).button(id!(button)).clicked(&actions) {
                 was_event_handled = true;
                 crate::virtual_dom::handle_event("click", button_listeners.dioxus_el);
             }
@@ -212,12 +216,13 @@ impl App {
                         }
                     },
                     "button" => {
-                        let label = parent_view
+                        let elem = parent_view
                             .append_child(cx, liveid, self.button_template)
                             .unwrap();
 
                         if let TemplateNode::Text { text } = &children[0] {
-                            label.apply_over(cx, live!{
+                            let button = elem.button(id!(button));
+                            button.apply_over(cx, live!{
                                 text: (text.clone())
                             });
                         }
@@ -326,25 +331,29 @@ impl App {
                 continue;
             }
 
-            let name = style_attr.next().unwrap();
+            let name = style_attr.next().unwrap().trim();
             let value = style_attr.next().unwrap().trim();
 
             match name {
                 "text-align" => {
-                    println!("text-align");
                     match value {
                         "center" => {
-                            println!("center");
                             self.ui.widget(&[liveid]).apply_over(cx, live!{
                                 align: {x: 0.5}
-
-                                draw_bg: {
-                                    color: #ff0,
-                                }
                             });
                         },
                         &_ => ()
                     }
+                },
+                "margin-top" => {
+                    let number = value
+                        // TODO Remove suffix, but we should differentiate between px and other units
+                        .trim_end_matches(char::is_alphabetic)
+                        .parse::<u32>()
+                        .unwrap();
+                    self.ui.widget(&[liveid]).apply_over(cx, live!{
+                        margin: {top: (number)}
+                    })
                 },
                 &_ => ()
             }
