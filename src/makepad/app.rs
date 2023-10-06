@@ -2,7 +2,10 @@
 use makepad_widgets::*;
 
 use dioxus::core::{ElementId, Template};
-use dioxus::prelude::TemplateNode;
+use dioxus::prelude::{TemplateNode, TemplateAttribute};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+static UNIQUE_WIDGET_LIVE_ID: AtomicU64 = AtomicU64::new(1);
 
 live_design! {
     import makepad_widgets::base::*;
@@ -10,7 +13,9 @@ live_design! {
 
     App = {{App}} {
         ui: <Window> {
-            root = <View> {
+            body = <View> {
+                margin: {top: 50, left: 30, right: 30},
+                align: {x: 0, y: 0},
                 width: Fill,
                 height: Fill,
             }
@@ -19,29 +24,29 @@ live_design! {
         view_template: <View> {
             flow: Down,
             width: Fill,
-            height: Fill,
+            height: Fit,
         }
 
         label_template: <Label> {
-            text: "Hello, world!"
+            width: Fit,
         }
 
         heading1_template: <Label> {
+            width: Fit,
             draw_text: {
                 text_style: { font_size: 20. },
             }
-            text: "Hello, world!"
         }
 
         heading3_template: <Label> {
+            width: Fit,
             draw_text: {
                 text_style: { font_size: 16. },
             }
-            text: "Hello, world!"
         }
 
         button_template: <Button> {
-            text: "Click me!"
+            width: Fit,
         }
     }
 }
@@ -119,7 +124,7 @@ impl LiveHook for App {
 
     fn after_apply(&mut self, cx: &mut Cx, from: ApplyFrom, _index: usize, _nodes: &[LiveNode]) {
         if from.is_from_doc() {
-            let main_view = self.ui.view(id!(root));
+            let main_view = self.ui.view(id!(body));
 
             main_view.clear_children();
             self.dioxus_templates.clear();
@@ -151,7 +156,8 @@ impl App {
         node: &TemplateNode,
         parent_view: &ViewRef
     ) {
-        let liveid = LiveId::from_str(&format!("widget{}", path.last().unwrap()));
+        // TODO Define a better way to generate ids
+        let liveid = LiveId::from_str(&format!("widget{}", UNIQUE_WIDGET_LIVE_ID.fetch_add(1, Ordering::SeqCst)));
         match node {
             TemplateNode::Element {
                 tag,
@@ -218,6 +224,8 @@ impl App {
                     },
                     &_ => ()
                 }
+
+                self.process_attrs(cx, liveid, attrs);
             },
             TemplateNode::Text { .. } | TemplateNode::Dynamic { .. } | TemplateNode::DynamicText { .. } => ()
         }
@@ -234,9 +242,18 @@ impl App {
     fn process_mutation(&mut self, cx: &mut Cx, mutation: &serde_json::Value) {
         match mutation["type"].as_str().unwrap() {
             "AssignId" => {
-                let index = mutation["path"][0].as_u64().unwrap() as usize;
-                self.dioxus_templates[index].dioxus_el =
-                    Some(ElementId(mutation["id"].as_u64().unwrap() as usize));
+                let path_array = mutation["path"].as_array().unwrap();
+                let mut path: Vec<usize> = path_array.iter().map(|p| p.as_u64().unwrap() as usize).collect();
+
+                // Reconcialiation of paths: this mutations does not include the root node index (0)
+                path.insert(0, 0);
+
+                if let Some(mut template) = self.dioxus_templates
+                    .iter_mut()
+                    .find(|t| t.dioxus_path == path)
+                {
+                    template.dioxus_el = Some(ElementId(mutation["id"].as_u64().unwrap() as usize));
+                }
             },
             "NewEventListener" => {
                 let id = ElementId(mutation["id"].as_u64().unwrap() as usize);
@@ -282,6 +299,55 @@ impl App {
                 });
             }
             _ => ()
+        }
+    }
+
+    fn process_attrs(&mut self, cx: &mut Cx, liveid: LiveId, attrs: &[TemplateAttribute]) {
+        for attr in attrs {
+            match attr {
+                TemplateAttribute::Static {
+                    name,
+                    value,
+                    ..
+                } => {
+                    if *name == "style" {
+                        self.process_style(cx, liveid, value);
+                    }
+                },
+                &_ => ()
+            }
+        }
+    }
+
+    fn process_style(&mut self, cx: &mut Cx, liveid: LiveId, value: &str) {
+        for style_attr in value.split(";") {
+            let mut style_attr = style_attr.split(":");
+            if style_attr.clone().count() != 2 {
+                continue;
+            }
+
+            let name = style_attr.next().unwrap();
+            let value = style_attr.next().unwrap().trim();
+
+            match name {
+                "text-align" => {
+                    println!("text-align");
+                    match value {
+                        "center" => {
+                            println!("center");
+                            self.ui.widget(&[liveid]).apply_over(cx, live!{
+                                align: {x: 0.5}
+
+                                draw_bg: {
+                                    color: #ff0,
+                                }
+                            });
+                        },
+                        &_ => ()
+                    }
+                },
+                &_ => ()
+            }
         }
     }
 
