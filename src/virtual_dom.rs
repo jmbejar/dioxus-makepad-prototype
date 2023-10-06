@@ -21,8 +21,7 @@ pub fn rebuild() -> (String, String) {
       let mutations = vdom.rebuild();
 
       serialized_templates = serde_json::to_string(&mutations.templates).unwrap();
-      serialized_edits = serde_json::to_string(&mutations.edits).unwrap();
-      
+      serialized_edits = serde_json::to_string(&mutations.edits).unwrap(); 
   });
 
   (serialized_templates, serialized_edits)
@@ -35,4 +34,14 @@ pub fn handle_event(event_type: &str, element_id: ElementId) {
 
       vdom.handle_event(event_type, Rc::new(MouseData::default()), element_id, false);
   });
+}
+
+pub fn pending_mutations() -> String {
+  DIOXUS_VIRTUAL_DOM.with(|cell| {
+      let mut dg = cell.borrow_mut();
+      let vdom = &mut dg.as_mut().unwrap();
+
+      let mutations = vdom.render_immediate();
+      serde_json::to_string(&mutations.edits).unwrap()
+  })
 }

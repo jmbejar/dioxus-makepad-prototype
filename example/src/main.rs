@@ -13,7 +13,6 @@ fn app(cx: Scope) -> Element {
                 h1 { "Dioxus" }
                 h3 { "Frontend that scales." }
                 p { "Count: {counter}" }
-                p { "Count: {counter}" }
             }
             button {
                 onclick: |_| {

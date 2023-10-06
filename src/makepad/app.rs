@@ -67,6 +67,10 @@ pub struct App {
     #[live]
     ui: WidgetRef,
 
+    // TODO For a quick prototype we are using a single template for all elements
+    // and we rely on retained mode adding instances to a root view
+    // Let's consider later if relying on inmediate mode is a better option
+
     #[live]
     view_template: Option<LivePtr>,
     #[live]
@@ -93,11 +97,17 @@ impl AppMain for App {
 
         let actions = self.ui.handle_widget_event(cx, event);
 
+        let mut was_event_handled = false;
         for button_listeners in self.dioxus_listeners.iter() {
             let button_id = button_listeners.makepad_el;
             if self.ui.button(&[button_id]).clicked(&actions) {
+                was_event_handled = true;
                 crate::virtual_dom::handle_event("click", button_listeners.dioxus_el);
             }
+        }
+
+        if was_event_handled {
+            self.process_pending_mutations(cx);
         }
     }
 }
@@ -121,14 +131,12 @@ impl LiveHook for App {
             let mutations: Vec<serde_json::Value> = serde_json::from_str(&serialized_edits).unwrap();
 
             for template in templates {
-                dbg!(&template);
                 for (idx, root) in template.roots.iter().enumerate() {
                     self.add_node_from_template_node(vec![idx], cx, root, &main_view);
                 }
             }
 
             for mutation in mutations {
-                dbg!(&mutation);
                 self.process_mutation(cx, &mutation);
             }
         }
@@ -254,14 +262,41 @@ impl App {
                     .iter_mut()
                     .find(|t| t.dioxus_path == path)
                 {
-                    let value = mutation["value"].as_str().unwrap().to_string();
+                    // Store id because it is the reference of future SetText mutations
+                    let id = ElementId(mutation["id"].as_u64().unwrap() as usize);
+                    template.dioxus_el = Some(id);
+                    println!("dioxus_el is now {:?}", template.dioxus_el);
 
+                    let value = mutation["value"].as_str().unwrap().to_string();
                     self.ui.label(&[template.makepad_el]).apply_over(cx, live!{
                         text: (value)
                     });
                 }
+            },
+            "SetText" => {
+                let id = ElementId(mutation["id"].as_u64().unwrap() as usize);
+                let template = self.dioxus_templates.iter().find(|t| t.dioxus_el == Some(id)).unwrap();
+                dbg!(template);
+                let value = mutation["value"].as_str().unwrap().to_string();
+
+                self.ui.label(&[template.makepad_el]).apply_over(cx, live!{
+                    text: (value)
+                });
             }
             _ => ()
+        }
+    }
+
+    fn process_pending_mutations(&mut self, cx: &mut Cx) {
+        let serialized_edits = crate::virtual_dom::pending_mutations();
+        let mutations: Vec<serde_json::Value> = serde_json::from_str(&serialized_edits).unwrap();
+
+        for mutation in &mutations {
+            self.process_mutation(cx, &mutation);
+        }
+
+        if !mutations.is_empty() {
+            self.ui.redraw(cx);
         }
     }
 }
