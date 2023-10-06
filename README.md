@@ -16,7 +16,10 @@ cargo run
 
 ### What's next?
 
-Most of the code is experimenatal, so everything could be implemented much better. We're using JSON serialization for templates/mutations coming from Dioxus virtual DOM just because it was quicker way to have this demo working, but I would implement a Rust middle layer to represent that information with appropiate data types.
+Most of the code is experimenatal, so everything could be implemented much better.
+
+We're using JSON serialization for templates/mutations coming from Dioxus virtual DOM just because it was quicker way to have this demo working, but I would implement a Rust middle layer to represent that information with appropiate data types.
+
 Also, the metadata included in templates/mutations is only partially captured by Makepad side. We have to discover what we should persist in Makepad to better process mutations as they comes from Dioxus.
 
 CSS styles are also a pending task, nothing was implemented in this demo so far.
