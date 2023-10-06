@@ -5,10 +5,10 @@ use dioxus::core::{ElementId, Template};
 use dioxus::prelude::TemplateNode;
 
 live_design! {
-  import makepad_widgets::base::*;
-  import makepad_widgets::theme_desktop_dark::*;
+    import makepad_widgets::base::*;
+    import makepad_widgets::theme_desktop_dark::*;
 
-  App = {{App}} {
+    App = {{App}} {
         ui: <Window> {
             root = <View> {
                 width: Fill,
@@ -46,8 +46,10 @@ live_design! {
     }
 }
 
+#[derive(Debug)]
 pub struct DioxusTemplate {
     makepad_el: LiveId,
+    dioxus_path: Vec<usize>,
     dioxus_el: Option<ElementId>,
 }
 
@@ -119,21 +121,29 @@ impl LiveHook for App {
             let mutations: Vec<serde_json::Value> = serde_json::from_str(&serialized_edits).unwrap();
 
             for template in templates {
+                dbg!(&template);
                 for (idx, root) in template.roots.iter().enumerate() {
-                    self.add_node_from_template_node(idx, cx, root, &main_view);
+                    self.add_node_from_template_node(vec![idx], cx, root, &main_view);
                 }
             }
 
             for mutation in mutations {
-                self.process_mutation(&mutation);
+                dbg!(&mutation);
+                self.process_mutation(cx, &mutation);
             }
         }
     }
 }
 
 impl App {
-    fn add_node_from_template_node(&mut self, idx: usize, cx: &mut Cx, node: &TemplateNode, parent_view: &ViewRef) {
-        let liveid = LiveId::from_str(&format!("widget{}", idx));
+    fn add_node_from_template_node(
+        &mut self,
+        path: Vec<usize>,
+        cx: &mut Cx,
+        node: &TemplateNode,
+        parent_view: &ViewRef
+    ) {
+        let liveid = LiveId::from_str(&format!("widget{}", path.last().unwrap()));
         match node {
             TemplateNode::Element {
                 tag,
@@ -182,7 +192,9 @@ impl App {
                         
                         let view = parent_view.view(&[liveid]);
                         for (i, child) in children.iter().enumerate() {
-                            self.add_node_from_template_node(i, cx, child, &view);
+                            let mut new_path = path.clone();
+                            new_path.push(i);
+                            self.add_node_from_template_node(new_path, cx, child, &view);
                         }
                     },
                     "button" => {
@@ -205,12 +217,13 @@ impl App {
         self.dioxus_templates.push(
             DioxusTemplate {
                 makepad_el: liveid,
+                dioxus_path: path,
                 dioxus_el: None,
             }
         );
     }
 
-    fn process_mutation(&mut self, mutation: &serde_json::Value) {
+    fn process_mutation(&mut self, cx: &mut Cx, mutation: &serde_json::Value) {
         match mutation["type"].as_str().unwrap() {
             "AssignId" => {
                 let index = mutation["path"][0].as_u64().unwrap() as usize;
@@ -228,6 +241,26 @@ impl App {
                     }
                 );
             },
+            "HydrateText" => {
+                let path_array = mutation["path"].as_array().unwrap();
+                let mut path: Vec<usize> = path_array.iter().map(|p| p.as_u64().unwrap() as usize).collect();
+
+                // Reconcialiation of paths: this mutations does not include the root node index (0),
+                // and also, it includes an extra 0 for the nested DynamicText node that we don't track
+                path.insert(0, 0);
+                path.pop();
+
+                if let Some(mut template) = self.dioxus_templates
+                    .iter_mut()
+                    .find(|t| t.dioxus_path == path)
+                {
+                    let value = mutation["value"].as_str().unwrap().to_string();
+
+                    self.ui.label(&[template.makepad_el]).apply_over(cx, live!{
+                        text: (value)
+                    });
+                }
+            }
             _ => ()
         }
     }
