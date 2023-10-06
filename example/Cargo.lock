@@ -127,12 +127,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "constcat"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f272d0c4cf831b4fa80ee529c7707f76585986e910e1fbce1d7921970bc1a241"
-
-[[package]]
 name = "crossbeam-deque"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -214,29 +208,33 @@ dependencies = [
 
 [[package]]
 name = "dioxus"
-version = "0.4.2"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "734b13d4894daf5cee7d4a1d7960da207acd7d4b4e427c05c201a2ba87a5c032"
 dependencies = [
- "dioxus-core 0.4.2",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "dioxus-core-macro",
  "dioxus-hooks",
  "dioxus-hot-reload",
- "dioxus-html 0.4.2",
+ "dioxus-html 0.4.0",
  "dioxus-rsx",
 ]
 
 [[package]]
 name = "dioxus-core"
 version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9980d48779193a6fb30fb43cdb06cdcc6ada2173a73579bf92dec81607a7ed5e"
 dependencies = [
  "bumpalo",
  "futures-channel",
  "futures-util",
+ "log",
  "longest-increasing-subsequence",
  "rustc-hash",
  "serde",
  "slab",
  "smallbox",
- "tracing",
 ]
 
 [[package]]
@@ -257,10 +255,10 @@ dependencies = [
 
 [[package]]
 name = "dioxus-core-macro"
-version = "0.4.2"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e98f3e3fc1fb1f8796e30a5eaa6e037ca44105bdee3a70ed66721ac8b720c931"
 dependencies = [
- "constcat",
- "dioxus-core 0.4.2",
  "dioxus-rsx",
  "proc-macro2",
  "quote",
@@ -275,22 +273,26 @@ checksum = "2ea539174bb236e0e7dc9c12b19b88eae3cb574dedbd0252a2d43ea7e6de13e2"
 
 [[package]]
 name = "dioxus-hooks"
-version = "0.4.2"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "808e553203e4c2534e186a8a9da0f4032027ff5413067307ea8ecbd793e37f57"
 dependencies = [
- "dioxus-core 0.4.2",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "dioxus-debug-cell",
  "futures-channel",
+ "log",
  "slab",
  "thiserror",
- "tracing",
 ]
 
 [[package]]
 name = "dioxus-hot-reload"
-version = "0.4.2"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ceb8aca167a64e4b0afaff447b13052402a9ade3f21b9e7d031b6b72669994a"
 dependencies = [
- "dioxus-core 0.4.2",
- "dioxus-html 0.4.2",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "dioxus-html 0.4.0",
  "dioxus-rsx",
  "interprocess-docfix",
  "serde",
@@ -299,14 +301,16 @@ dependencies = [
 
 [[package]]
 name = "dioxus-html"
-version = "0.4.2"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb712fe56650dafddb626f8aed3d6ae194706c0299e175e99b45464add8b7af1"
 dependencies = [
  "async-channel",
  "async-trait",
- "dioxus-core 0.4.2",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "enumset",
  "euclid",
- "keyboard-types",
+ "keyboard-types 0.6.2",
  "serde",
  "serde-value",
  "serde_json",
@@ -324,7 +328,7 @@ dependencies = [
  "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus/)",
  "enumset",
  "euclid",
- "keyboard-types",
+ "keyboard-types 0.7.0",
  "serde",
  "serde-value",
  "serde_json",
@@ -337,7 +341,7 @@ name = "dioxus-makepad"
 version = "0.1.0"
 dependencies = [
  "dioxus",
- "dioxus-html 0.4.2 (git+https://github.com/DioxusLabs/dioxus/)",
+ "dioxus-html 0.4.2",
  "dioxus-native-core",
  "makepad-widgets",
  "serde",
@@ -360,7 +364,7 @@ dependencies = [
  "anymap",
  "dashmap",
  "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus/)",
- "keyboard-types",
+ "keyboard-types 0.7.0",
  "parking_lot",
  "rayon",
  "rustc-hash",
@@ -371,9 +375,11 @@ dependencies = [
 
 [[package]]
 name = "dioxus-rsx"
-version = "0.4.2"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "531a6b418fb75d08389920c024d1c082b500844cf50ccb16ad8d9ee33a1907a1"
 dependencies = [
- "dioxus-core 0.4.2",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2",
  "quote",
  "syn 2.0.37",
@@ -558,6 +564,17 @@ dependencies = [
 
 [[package]]
 name = "keyboard-types"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b7668b7cff6a51fe61cdde64cd27c8a220786f399501b57ebe36f7d8112fd68"
+dependencies = [
+ "bitflags 1.3.2",
+ "serde",
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "keyboard-types"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b750dcadc39a09dbadd74e118f6dd6598df77fa01df0cfcdc52c28dece74528a"
@@ -598,6 +615,7 @@ checksum = "b3bd0dd2cd90571056fdb71f6275fada10131182f84899f4b2a916e565d81d86"
 [[package]]
 name = "makepad-derive-live"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-live-id",
  "makepad-micro-proc-macro",
@@ -606,6 +624,7 @@ dependencies = [
 [[package]]
 name = "makepad-derive-wasm-bridge"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-micro-proc-macro",
 ]
@@ -613,6 +632,7 @@ dependencies = [
 [[package]]
 name = "makepad-derive-widget"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-live-id",
  "makepad-micro-proc-macro",
@@ -621,6 +641,7 @@ dependencies = [
 [[package]]
 name = "makepad-draw"
 version = "0.6.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-platform",
  "makepad-vector",
@@ -631,18 +652,22 @@ dependencies = [
 [[package]]
 name = "makepad-error-log"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 
 [[package]]
 name = "makepad-futures"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 
 [[package]]
 name = "makepad-futures-legacy"
 version = "0.7.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 
 [[package]]
 name = "makepad-live-compiler"
 version = "0.5.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-derive-live",
  "makepad-live-tokenizer",
@@ -652,6 +677,7 @@ dependencies = [
 [[package]]
 name = "makepad-live-id"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-error-log",
  "makepad-live-id-macros",
@@ -660,6 +686,7 @@ dependencies = [
 [[package]]
 name = "makepad-live-id-macros"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-micro-proc-macro",
 ]
@@ -667,6 +694,7 @@ dependencies = [
 [[package]]
 name = "makepad-live-tokenizer"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-live-id",
  "makepad-math",
@@ -676,14 +704,17 @@ dependencies = [
 [[package]]
 name = "makepad-math"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 
 [[package]]
 name = "makepad-micro-proc-macro"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 
 [[package]]
 name = "makepad-micro-serde"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-micro-serde-derive",
 ]
@@ -691,6 +722,7 @@ dependencies = [
 [[package]]
 name = "makepad-micro-serde-derive"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-micro-proc-macro",
 ]
@@ -698,10 +730,12 @@ dependencies = [
 [[package]]
 name = "makepad-objc-sys"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 
 [[package]]
 name = "makepad-platform"
 version = "0.6.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-futures",
  "makepad-futures-legacy",
@@ -715,6 +749,7 @@ dependencies = [
 [[package]]
 name = "makepad-shader-compiler"
 version = "0.5.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-live-compiler",
 ]
@@ -722,6 +757,7 @@ dependencies = [
 [[package]]
 name = "makepad-vector"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "ttf-parser",
 ]
@@ -729,6 +765,7 @@ dependencies = [
 [[package]]
 name = "makepad-wasm-bridge"
 version = "0.4.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-derive-wasm-bridge",
  "makepad-live-id",
@@ -737,6 +774,7 @@ dependencies = [
 [[package]]
 name = "makepad-widgets"
 version = "0.6.0"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-derive-widget",
  "makepad-draw",
@@ -747,6 +785,7 @@ dependencies = [
 [[package]]
 name = "makepad-windows"
 version = "0.51.1"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "windows-core",
  "windows-targets",
@@ -755,6 +794,7 @@ dependencies = [
 [[package]]
 name = "makepad-zune-core"
 version = "0.2.14"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "bitflags 2.4.0",
 ]
@@ -762,6 +802,7 @@ dependencies = [
 [[package]]
 name = "makepad-zune-inflate"
 version = "0.2.54"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "simd-adler32",
 ]
@@ -769,6 +810,7 @@ dependencies = [
 [[package]]
 name = "makepad-zune-jpeg"
 version = "0.3.17"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-zune-core",
 ]
@@ -776,6 +818,7 @@ dependencies = [
 [[package]]
 name = "makepad-zune-png"
 version = "0.2.1"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "makepad-zune-core",
  "makepad-zune-inflate",
@@ -1294,6 +1337,7 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 [[package]]
 name = "windows-core"
 version = "0.51.1"
+source = "git+https://github.com/jmbejar/makepad?branch=makepad-dioxus-experiment#e400d823534f4f3f91c66965674a85569d8a95b2"
 dependencies = [
  "windows-targets",
 ]

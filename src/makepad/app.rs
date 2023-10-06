@@ -265,7 +265,6 @@ impl App {
                     // Store id because it is the reference of future SetText mutations
                     let id = ElementId(mutation["id"].as_u64().unwrap() as usize);
                     template.dioxus_el = Some(id);
-                    println!("dioxus_el is now {:?}", template.dioxus_el);
 
                     let value = mutation["value"].as_str().unwrap().to_string();
                     self.ui.label(&[template.makepad_el]).apply_over(cx, live!{
@@ -276,7 +275,6 @@ impl App {
             "SetText" => {
                 let id = ElementId(mutation["id"].as_u64().unwrap() as usize);
                 let template = self.dioxus_templates.iter().find(|t| t.dioxus_el == Some(id)).unwrap();
-                dbg!(template);
                 let value = mutation["value"].as_str().unwrap().to_string();
 
                 self.ui.label(&[template.makepad_el]).apply_over(cx, live!{
