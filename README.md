@@ -22,6 +22,6 @@ We're using JSON serialization for templates/mutations coming from Dioxus virtua
 
 Also, the metadata included in templates/mutations is only partially captured by Makepad side. We have to discover what we should persist in Makepad to better process mutations as they comes from Dioxus.
 
-CSS styles are also a pending task, nothing was implemented in this demo so far.
+CSS styles will need to be fully translated to the Makepad style/layout system. This would be sort of a massive task, but we have some initial examples done in this repo.
 
 And, of course, keep iterating with more demo apps, in order to be able to render and respond to more events.
