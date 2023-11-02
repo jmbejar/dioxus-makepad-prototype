@@ -1,8 +1,7 @@
-
 use makepad_widgets::*;
 
-use dioxus::core::{ElementId, Template};
-use dioxus::prelude::{TemplateNode, TemplateAttribute};
+use dioxus::core::{ElementId, Mutation};
+use dioxus::prelude::{TemplateAttribute, TemplateNode};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 static UNIQUE_WIDGET_LIVE_ID: AtomicU64 = AtomicU64::new(1);
@@ -58,7 +57,7 @@ live_design! {
 #[derive(Debug)]
 pub struct DioxusTemplate {
     makepad_el: LiveId,
-    dioxus_path: Vec<usize>,
+    dioxus_path: Vec<u8>,
     dioxus_el: Option<ElementId>,
 }
 
@@ -79,7 +78,6 @@ pub struct App {
     // TODO For a quick prototype we are using a single template for all elements
     // and we rely on retained mode adding instances to a root view
     // Let's consider later if relying on inmediate mode is a better option
-
     #[live]
     view_template: Option<LivePtr>,
     #[live]
@@ -94,7 +92,7 @@ pub struct App {
     #[rust]
     dioxus_templates: Vec<DioxusTemplate>,
     #[rust]
-    dioxus_listeners: Vec<DioxusListener>, 
+    dioxus_listeners: Vec<DioxusListener>,
 }
 
 impl AppMain for App {
@@ -109,7 +107,12 @@ impl AppMain for App {
         let mut was_event_handled = false;
         for button_listeners in self.dioxus_listeners.iter() {
             let button_id = button_listeners.makepad_el;
-            if self.ui.view(&[button_id]).button(id!(button)).clicked(&actions) {
+            if self
+                .ui
+                .view(&[button_id])
+                .button(id!(button))
+                .clicked(&actions)
+            {
                 was_event_handled = true;
                 crate::virtual_dom::handle_event("click", button_listeners.dioxus_el);
             }
@@ -134,20 +137,17 @@ impl LiveHook for App {
             self.dioxus_templates.clear();
             self.dioxus_listeners.clear();
 
-            let (serialized_templates, serialized_edits) = crate::virtual_dom::rebuild();
-
-            let templates: Vec<Template> = serde_json::from_str(&serialized_templates).unwrap();
-            let mutations: Vec<serde_json::Value> = serde_json::from_str(&serialized_edits).unwrap();
-
-            for template in templates {
-                for (idx, root) in template.roots.iter().enumerate() {
-                    self.add_node_from_template_node(vec![idx], cx, root, &main_view);
+            crate::virtual_dom::rebuild_with(|muts| {
+                for template in muts.templates {
+                    for (idx, root) in template.roots.iter().enumerate() {
+                        self.add_node_from_template_node(vec![idx as u8], cx, root, &main_view);
+                    }
                 }
-            }
 
-            for mutation in mutations {
-                self.process_mutation(cx, &mutation);
-            }
+                for mutation in muts.edits.iter() {
+                    self.process_mutation(cx, mutation);
+                }
+            });
         }
     }
 }
@@ -155,13 +155,16 @@ impl LiveHook for App {
 impl App {
     fn add_node_from_template_node(
         &mut self,
-        path: Vec<usize>,
+        path: Vec<u8>,
         cx: &mut Cx,
         node: &TemplateNode,
-        parent_view: &ViewRef
+        parent_view: &ViewRef,
     ) {
         // TODO Define a better way to generate ids
-        let liveid = LiveId::from_str(&format!("widget{}", UNIQUE_WIDGET_LIVE_ID.fetch_add(1, Ordering::SeqCst)));
+        let liveid = LiveId::from_str(&format!(
+            "widget{}",
+            UNIQUE_WIDGET_LIVE_ID.fetch_add(1, Ordering::SeqCst)
+        ));
         match node {
             TemplateNode::Element {
                 tag,
@@ -176,45 +179,54 @@ impl App {
                             .unwrap();
 
                         if let TemplateNode::Text { text } = &children[0] {
-                            label.apply_over(cx, live!{
-                                text: (text.clone())
-                            });
+                            label.apply_over(
+                                cx,
+                                live! {
+                                    text: (text.clone())
+                                },
+                            );
                         }
-                    },
+                    }
                     "h1" => {
                         let label = parent_view
                             .append_child(cx, liveid, self.heading1_template)
                             .unwrap();
 
                         if let TemplateNode::Text { text } = &children[0] {
-                            label.apply_over(cx, live!{
-                                text: (text.clone())
-                            });
+                            label.apply_over(
+                                cx,
+                                live! {
+                                    text: (text.clone())
+                                },
+                            );
                         }
-                    },
+                    }
                     "h3" => {
                         let label = parent_view
                             .append_child(cx, liveid, self.heading3_template)
                             .unwrap();
 
                         if let TemplateNode::Text { text } = &children[0] {
-                            label.apply_over(cx, live!{
-                                text: (text.clone())
-                            });
+                            label.apply_over(
+                                cx,
+                                live! {
+                                    text: (text.clone())
+                                },
+                            );
                         }
-                    },
+                    }
                     "div" => {
                         parent_view
                             .append_child(cx, liveid, self.view_template)
                             .unwrap();
-                        
+
                         let view = parent_view.view(&[liveid]);
                         for (i, child) in children.iter().enumerate() {
                             let mut new_path = path.clone();
-                            new_path.push(i);
+                            new_path.push(i as u8);
                             self.add_node_from_template_node(new_path, cx, child, &view);
                         }
-                    },
+                    }
                     "button" => {
                         let elem = parent_view
                             .append_child(cx, liveid, self.button_template)
@@ -222,104 +234,118 @@ impl App {
 
                         if let TemplateNode::Text { text } = &children[0] {
                             let button = elem.button(id!(button));
-                            button.apply_over(cx, live!{
-                                text: (text.clone())
-                            });
+                            button.apply_over(
+                                cx,
+                                live! {
+                                    text: (text.clone())
+                                },
+                            );
                         }
-                    },
-                    &_ => ()
+                    }
+                    &_ => (),
                 }
 
                 self.process_attrs(cx, liveid, attrs);
-            },
-            TemplateNode::Text { .. } | TemplateNode::Dynamic { .. } | TemplateNode::DynamicText { .. } => ()
+            }
+            TemplateNode::Text { .. }
+            | TemplateNode::Dynamic { .. }
+            | TemplateNode::DynamicText { .. } => (),
         }
 
-        self.dioxus_templates.push(
-            DioxusTemplate {
-                makepad_el: liveid,
-                dioxus_path: path,
-                dioxus_el: None,
-            }
-        );
+        self.dioxus_templates.push(DioxusTemplate {
+            makepad_el: liveid,
+            dioxus_path: path,
+            dioxus_el: None,
+        });
     }
 
-    fn process_mutation(&mut self, cx: &mut Cx, mutation: &serde_json::Value) {
-        match mutation["type"].as_str().unwrap() {
-            "AssignId" => {
-                let path_array = mutation["path"].as_array().unwrap();
-                let mut path: Vec<usize> = path_array.iter().map(|p| p.as_u64().unwrap() as usize).collect();
+    fn process_mutation(&mut self, cx: &mut Cx, mutation: &Mutation) {
+        match mutation {
+            Mutation::AssignId { path, id } => {
+                let mut path = path.to_vec();
 
                 // Reconcialiation of paths: this mutations does not include the root node index (0)
                 path.insert(0, 0);
 
-                if let Some(mut template) = self.dioxus_templates
+                if let Some(template) = self
+                    .dioxus_templates
                     .iter_mut()
                     .find(|t| t.dioxus_path == path)
                 {
-                    template.dioxus_el = Some(ElementId(mutation["id"].as_u64().unwrap() as usize));
+                    template.dioxus_el = Some(*id);
                 }
-            },
-            "NewEventListener" => {
-                let id = ElementId(mutation["id"].as_u64().unwrap() as usize);
-                let template = self.dioxus_templates.iter().find(|t| t.dioxus_el == Some(id)).unwrap();
-                self.dioxus_listeners.push(
-                    DioxusListener {
-                        makepad_el: template.makepad_el,
-                        dioxus_el: id,
-                        name: mutation["name"].to_string(),
-                    }
-                );
-            },
-            "HydrateText" => {
-                let path_array = mutation["path"].as_array().unwrap();
-                let mut path: Vec<usize> = path_array.iter().map(|p| p.as_u64().unwrap() as usize).collect();
+            }
+            Mutation::HydrateText { path, value, id } => {
+                let mut path = path.to_vec();
 
                 // Reconcialiation of paths: this mutations does not include the root node index (0),
                 // and also, it includes an extra 0 for the nested DynamicText node that we don't track
                 path.insert(0, 0);
                 path.pop();
 
-                if let Some(mut template) = self.dioxus_templates
+                if let Some(template) = self
+                    .dioxus_templates
                     .iter_mut()
                     .find(|t| t.dioxus_path == path)
                 {
                     // Store id because it is the reference of future SetText mutations
-                    let id = ElementId(mutation["id"].as_u64().unwrap() as usize);
-                    template.dioxus_el = Some(id);
-
-                    let value = mutation["value"].as_str().unwrap().to_string();
-                    self.ui.label(&[template.makepad_el]).apply_over(cx, live!{
-                        text: (value)
-                    });
+                    template.dioxus_el = Some(*id);
+                    self.ui
+                        .label(&[template.makepad_el])
+                        .apply_over(cx, live! { text: (value) });
                 }
-            },
-            "SetText" => {
-                let id = ElementId(mutation["id"].as_u64().unwrap() as usize);
-                let template = self.dioxus_templates.iter().find(|t| t.dioxus_el == Some(id)).unwrap();
-                let value = mutation["value"].as_str().unwrap().to_string();
-
-                self.ui.label(&[template.makepad_el]).apply_over(cx, live!{
-                    text: (value)
+            }
+            Mutation::SetText { value, id } => {
+                let template = self
+                    .dioxus_templates
+                    .iter()
+                    .find(|t| t.dioxus_el == Some(*id))
+                    .unwrap();
+                self.ui
+                    .label(&[template.makepad_el])
+                    .apply_over(cx, live! { text: (value) });
+            }
+            Mutation::NewEventListener { name, id } => {
+                let template = self
+                    .dioxus_templates
+                    .iter()
+                    .find(|t| t.dioxus_el == Some(*id))
+                    .unwrap();
+                self.dioxus_listeners.push(DioxusListener {
+                    makepad_el: template.makepad_el,
+                    dioxus_el: *id,
+                    name: name.to_string(),
                 });
             }
-            _ => ()
+            Mutation::RemoveEventListener { name, id } => todo!(),
+            Mutation::Remove { id } => todo!(),
+            Mutation::PushRoot { id } => todo!(),
+            Mutation::AppendChildren { id, m } => todo!(),
+            Mutation::CreatePlaceholder { id } => todo!(),
+            Mutation::CreateTextNode { value, id } => todo!(),
+            Mutation::LoadTemplate { name, index, id } => todo!(),
+            Mutation::ReplaceWith { id, m } => todo!(),
+            Mutation::ReplacePlaceholder { path, m } => todo!(),
+            Mutation::InsertAfter { id, m } => todo!(),
+            Mutation::InsertBefore { id, m } => todo!(),
+            Mutation::SetAttribute {
+                name,
+                value,
+                id,
+                ns,
+            } => todo!(),
         }
     }
 
     fn process_attrs(&mut self, cx: &mut Cx, liveid: LiveId, attrs: &[TemplateAttribute]) {
         for attr in attrs {
             match attr {
-                TemplateAttribute::Static {
-                    name,
-                    value,
-                    ..
-                } => {
+                TemplateAttribute::Static { name, value, .. } => {
                     if *name == "style" {
                         self.process_style(cx, liveid, value);
                     }
-                },
-                &_ => ()
+                }
+                &_ => (),
             }
         }
     }
@@ -335,15 +361,16 @@ impl App {
             let value = style_attr.next().unwrap().trim();
 
             match name {
-                "text-align" => {
-                    match value {
-                        "center" => {
-                            self.ui.widget(&[liveid]).apply_over(cx, live!{
+                "text-align" => match value {
+                    "center" => {
+                        self.ui.widget(&[liveid]).apply_over(
+                            cx,
+                            live! {
                                 align: {x: 0.5}
-                            });
-                        },
-                        &_ => ()
+                            },
+                        );
                     }
+                    &_ => (),
                 },
                 "margin-top" => {
                     let number = value
@@ -351,25 +378,27 @@ impl App {
                         .trim_end_matches(char::is_alphabetic)
                         .parse::<u32>()
                         .unwrap();
-                    self.ui.widget(&[liveid]).apply_over(cx, live!{
-                        margin: {top: (number)}
-                    })
-                },
-                &_ => ()
+                    self.ui.widget(&[liveid]).apply_over(
+                        cx,
+                        live! {
+                            margin: {top: (number)}
+                        },
+                    )
+                }
+                &_ => (),
             }
         }
     }
 
     fn process_pending_mutations(&mut self, cx: &mut Cx) {
-        let serialized_edits = crate::virtual_dom::pending_mutations();
-        let mutations: Vec<serde_json::Value> = serde_json::from_str(&serialized_edits).unwrap();
+        crate::virtual_dom::with_pending_mutations(|muts| {
+            for mutation in &muts.edits {
+                self.process_mutation(cx, &mutation);
+            }
 
-        for mutation in &mutations {
-            self.process_mutation(cx, &mutation);
-        }
-
-        if !mutations.is_empty() {
-            self.ui.redraw(cx);
-        }
+            if !muts.edits.is_empty() {
+                self.ui.redraw(cx);
+            }
+        });
     }
 }
